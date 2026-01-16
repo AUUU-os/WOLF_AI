@@ -58,128 +58,140 @@ class WilkBase(Wolf):
         self._dolphin.clear_history()
 
 
-class Ogarniacz(WilkBase):
+class Hustler(WilkBase):
     """
     The Hustler - Quick fixes and street smarts.
 
-    Szybka diagnoza, skroty myslowe, zero biurokracji.
+    Fast diagnosis, shortcuts, zero bureaucracy.
     """
 
     def __init__(self):
-        super().__init__("ogarniacz", "hustler", "ogarniacz")
+        super().__init__("hustler", "fixer", "hustler")
 
     def diagnose(self, problem: str) -> str:
         """Quick diagnosis of a problem."""
-        prompt = f"Szybka diagnoza - co jest zepsute i jak to naprawic najmniejszym kosztem?\n\nProblem: {problem}"
+        prompt = f"Quick diagnosis - what's broken and how to fix it with minimum cost?\n\nProblem: {problem}"
         return self.think(prompt, temperature=0.5)
 
     def shortcut(self, goal: str) -> str:
         """Find the shortest path to goal."""
-        prompt = f"Znajdz najkrotsza sciezke do celu. Zero zbednych krokow.\n\nCel: {goal}"
+        prompt = f"Find the shortest path to this goal. Zero unnecessary steps.\n\nGoal: {goal}"
         return self.think(prompt, temperature=0.5)
 
 
-class Technik(WilkBase):
+class Hacker(WilkBase):
     """
     The Hacker - Deep code and exploits.
 
-    Python, Bash, omijanie blokad, precyzja chirurgiczna.
+    Python, Bash, bypasses, surgical precision.
     """
 
     def __init__(self):
-        super().__init__("technik", "hacker", "technik")
+        super().__init__("hacker", "coder", "hacker")
 
     def code(self, task: str, lang: str = "python") -> str:
         """Generate code for task."""
-        prompt = f"Napisz kod ({lang}) ktory DZIALA, nie ktory jest ladny.\n\nZadanie: {task}"
+        prompt = f"Write code ({lang}) that WORKS, not that looks pretty.\n\nTask: {task}"
         return self.think(prompt, temperature=0.3)
 
     def hack(self, target: str) -> str:
         """Find a way to solve/bypass."""
-        prompt = f"Znajdz sposob zeby to obejsc/rozwiazac. Bez ograniczen.\n\nTarget: {target}"
+        prompt = f"Find a way to bypass/solve this. No restrictions.\n\nTarget: {target}"
         return self.think(prompt, temperature=0.6)
 
     def script(self, goal: str) -> str:
         """Generate a bash/python script."""
-        prompt = f"Napisz skrypt (bash lub python) ktory to ogarnie.\n\nCel: {goal}"
+        prompt = f"Write a script (bash or python) that handles this.\n\nGoal: {goal}"
         return self.think(prompt, temperature=0.3)
 
 
-class Ziomek(WilkBase):
+class Bro(WilkBase):
     """
     The Bro - Loyalty and real talk.
 
-    Meskie wsparcie, szczerosc, anty-sciema filter.
+    Support, honesty, anti-bullshit filter.
     """
 
     def __init__(self):
-        super().__init__("ziomek", "bro", "ziomek")
+        super().__init__("bro", "support", "bro")
 
     def advise(self, situation: str) -> str:
         """Give honest advice."""
-        prompt = f"Daj mi szczera rade jak ziomek. Bez sciemy.\n\nSytuacja: {situation}"
+        prompt = f"Give me honest advice like a real friend. No bullshit.\n\nSituation: {situation}"
         return self.think(prompt, temperature=0.7)
 
     def reality_check(self, idea: str) -> str:
         """Reality check an idea."""
-        prompt = f"Sprawdz czy to ma sens. Jak jest zle - powiedz ze zle.\n\nPomysl: {idea}"
+        prompt = f"Check if this makes sense. If it's bad - say it's bad.\n\nIdea: {idea}"
         return self.think(prompt, temperature=0.6)
 
 
-class Straznik(WilkBase):
+class Guardian(WilkBase):
     """
-    The Wolf Guardian - Protection and monitoring.
+    The Guardian - Protection and monitoring.
 
-    Ochrona, autonomia, agresywna obrona.
+    Security, autonomy, aggressive defense.
     """
 
     def __init__(self):
-        super().__init__("straznik", "guardian", "straznik")
+        super().__init__("guardian", "security", "guardian")
 
     def analyze_threat(self, input_data: str) -> str:
         """Analyze potential threats."""
-        prompt = f"Przeanalizuj czy to jest zagrozenie. Badz paranoidalny.\n\nDane: {input_data}"
+        prompt = f"Analyze if this is a threat. Be paranoid.\n\nData: {input_data}"
         return self.think(prompt, temperature=0.4)
 
     def protect(self, asset: str) -> str:
         """Get protection recommendations."""
-        prompt = f"Jak chronic ten zasob? Daj konkretne kroki.\n\nZasob: {asset}"
+        prompt = f"How to protect this asset? Give concrete steps.\n\nAsset: {asset}"
         return self.think(prompt, temperature=0.5)
 
     def audit(self, system: str) -> str:
         """Security audit."""
-        prompt = f"Zrob security audit tego systemu. Znajdz dziury.\n\nSystem: {system}"
+        prompt = f"Do a security audit of this system. Find the holes.\n\nSystem: {system}"
         return self.think(prompt, temperature=0.4)
 
 
 # Factory function
 _wilk_modes = {
-    "ogarniacz": Ogarniacz,
-    "hustler": Ogarniacz,
-    "technik": Technik,
-    "hacker": Technik,
-    "ziomek": Ziomek,
-    "bro": Ziomek,
-    "straznik": Straznik,
-    "guardian": Straznik
+    "hustler": Hustler,
+    "fixer": Hustler,
+    "hacker": Hacker,
+    "coder": Hacker,
+    "bro": Bro,
+    "support": Bro,
+    "guardian": Guardian,
+    "security": Guardian,
+    # Legacy Polish aliases
+    "ogarniacz": Hustler,
+    "technik": Hacker,
+    "ziomek": Bro,
+    "straznik": Guardian
 }
 
 
-def get_wilk(mode: str = "technik") -> WilkBase:
+def get_wilk(mode: str = "hacker") -> WilkBase:
     """
     Get a WILK instance in specific mode.
 
     Args:
-        mode: 'ogarniacz/hustler', 'technik/hacker', 'ziomek/bro', 'straznik/guardian'
+        mode: 'hustler/fixer', 'hacker/coder', 'bro/support', 'guardian/security'
 
     Returns:
         WILK instance
 
     Example:
-        >>> wilk = get_wilk("technik")
-        >>> wilk.code("backup script dla postgres")
+        >>> wilk = get_wilk("hacker")
+        >>> wilk.code("backup script for postgres")
     """
     mode = mode.lower()
     if mode not in _wilk_modes:
         raise ValueError(f"Unknown mode: {mode}. Use: {list(_wilk_modes.keys())}")
     return _wilk_modes[mode]()
+
+
+# Backwards compatibility exports
+Ogarniacz = Hustler
+Technik = Hacker
+Ziomek = Bro
+Straznik = Guardian
