@@ -1,23 +1,31 @@
 # WOLF_AI Dependencies
 
-# Core
+# ==================== Core ====================
 fastapi>=0.104.0
 uvicorn>=0.24.0
 pydantic>=2.0.0
 
-# Communication
+# ==================== HTTP/API ====================
 httpx>=0.25.0
+requests>=2.31.0
+
+# ==================== WebSocket ====================
 websockets>=12.0
 
-# Memory
-chromadb>=0.4.0
-sentence-transformers>=2.2.0
+# ==================== Telegram Bot ====================
+python-telegram-bot>=20.0
 
-# Utilities
+# ==================== Configuration ====================
 python-dotenv>=1.0.0
+
+# ==================== CLI/UI ====================
 rich>=13.0.0
 
-# Optional: AI Models
+# ==================== Memory (optional) ====================
+# chromadb>=0.4.0
+# sentence-transformers>=2.2.0
+
+# ==================== AI Models (optional) ====================
 # openai>=1.0.0
 # anthropic>=0.7.0
 # google-generativeai>=0.3.0

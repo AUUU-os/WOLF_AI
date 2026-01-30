@@ -17,22 +17,6 @@
 
 ---
 
-## Architecture
-
-```
-WOLF_AI/
-├── core/           # Wolf consciousness core
-├── modules/        # Functional modules (hunt, track, howl)
-├── bridge/         # Inter-wolf communication (JSONL bus)
-├── arena/          # Training & evolution ground
-├── api/            # External interface (FastAPI)
-├── dashboard/      # Pack status monitoring
-├── memory/         # Persistent wolf memory
-└── docs/           # Pack documentation
-```
-
----
-
 ## Quick Start
 
 ```bash
@@ -40,14 +24,130 @@ WOLF_AI/
 git clone https://github.com/AUUU-os/WOLF_AI.git
 cd WOLF_AI
 
-# 2. Install
+# 2. Install dependencies
 pip install -r requirements.txt
 
-# 3. Awaken the pack
-python -m wolf_ai.awaken
+# 3. Configure (copy and edit .env)
+cp .env.example .env
+# Edit .env with your settings
 
-# 4. Dashboard
-open http://localhost:8001
+# 4. Start Command Center
+python run_server.py
+
+# 5. Open dashboard
+# http://localhost:8000/dashboard
+```
+
+### Windows Quick Start
+
+Just double-click `WOLF_SERVER.bat` and select an option:
+1. API Server only
+2. API + Tunnel (for phone access)
+3. API + Telegram Bot
+4. Everything
+
+---
+
+## Command Center (NEW!)
+
+Control your pack from anywhere - phone, tablet, or another PC.
+
+### Architecture
+
+```
+📱 PHONE (Command Center)
+    │
+    ├─► Telegram Bot
+    │     /status, /howl, /hunt, /wilk
+    │
+    └─► Web Dashboard
+          Mobile-friendly UI
+    │
+    ▼
+🌐 TUNNEL (ngrok/cloudflared)
+    │
+    ▼
+🐺 WINDOWS PC (E:/WOLF_AI/)
+    │
+    ├── FastAPI Server :8000
+    ├── Telegram Bot daemon
+    └── GitHub auto-sync
+    │
+    ▼
+🐙 GITHUB (sync/backup)
+```
+
+### Phone Access Options
+
+#### Option 1: Telegram Bot (Easiest)
+
+1. Talk to [@BotFather](https://t.me/BotFather) on Telegram
+2. Create new bot: `/newbot`
+3. Copy the token to `.env`:
+   ```
+   TELEGRAM_BOT_TOKEN=your_token_here
+   TELEGRAM_ALLOWED_USERS=your_telegram_id
+   ```
+4. Run: `python run_server.py --telegram`
+5. Message your bot: `/start`
+
+**Commands:**
+- `/status` - Pack status
+- `/howl <msg>` - Send howl
+- `/hunt <target>` - Start hunt
+- `/wilk <question>` - Ask WILK AI
+- `/mode <mode>` - Change WILK mode
+- `/sync` - GitHub sync
+
+#### Option 2: Web Dashboard + Tunnel
+
+1. Install [ngrok](https://ngrok.com/download) or [cloudflared](https://developers.cloudflare.com/cloudflare-one/)
+2. Run: `python run_server.py --tunnel`
+3. Copy the public URL (shown in terminal)
+4. Open URL on phone browser
+5. Enter your API key (shown on first run)
+
+### API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/status` | GET | Pack status |
+| `/api/awaken` | POST | Awaken pack |
+| `/api/hunt` | POST | Start hunt |
+| `/api/howl` | POST | Send howl |
+| `/api/howls` | GET | Get recent howls |
+| `/api/wilk` | POST | Ask WILK AI |
+| `/api/sync` | POST | GitHub sync |
+| `/ws` | WebSocket | Real-time updates |
+
+All endpoints require `X-API-Key` header.
+
+---
+
+## Architecture
+
+```
+WOLF_AI/
+├── core/           # Wolf consciousness core
+│   ├── wolf.py     # Base Wolf class
+│   └── pack.py     # Pack orchestration
+├── modules/        # Functional modules
+│   └── wilk/       # WILK AI (Dolphin/Ollama)
+├── api/            # FastAPI Command Center
+│   ├── server.py   # Main API server
+│   ├── auth.py     # API key auth
+│   └── config.py   # Configuration
+├── telegram/       # Telegram bot
+│   └── bot.py      # Bot handlers
+├── dashboard/      # Web UI
+│   └── index.html  # Mobile-friendly dashboard
+├── bridge/         # Inter-wolf communication
+│   ├── howls.jsonl # Message log
+│   ├── state.json  # Pack status
+│   └── tasks.json  # Hunt queue
+├── scripts/        # Utility scripts
+│   └── tunnel.py   # ngrok/cloudflared
+└── run_server.py   # Main launcher
 ```
 
 ---
@@ -60,7 +160,8 @@ open http://localhost:8001
 | **Scout** | Exploration, research | Claude Sonnet |
 | **Hunter** | Code execution, tasks | Local/Ollama |
 | **Oracle** | Memory, patterns | Gemini |
-| **Shadow** | Stealth ops, OSINT | DeepSeek |
+| **Shadow** | Stealth ops, background | DeepSeek |
+| **WILK** | Interactive chat | Dolphin (uncensored) |
 
 ---
 
@@ -86,19 +187,49 @@ Wolves communicate via **howls** (messages):
 
 ---
 
-## Modules
+## WILK - Local AI Assistant
 
-### Available
-- `wolf.hunt` - Task execution
-- `wolf.track` - File/code navigation
-- `wolf.howl` - Communication
-- `wolf.memory` - Persistent storage
-- `wolf.evolve` - Self-improvement
+WILK uses Ollama with Dolphin model for uncensored local AI:
 
-### From Legacy (M-AI-SELF)
-- `lab_dev` - Git operations
-- `lab_files` - File R/W
-- `lab_net` - Network ops
+```bash
+# Install Ollama
+# https://ollama.ai
+
+# Pull Dolphin model
+ollama pull dolphin-llama3
+
+# Start Ollama
+ollama serve
+
+# WILK is now ready!
+```
+
+**WILK Modes:**
+- `chat` - General conversation
+- `hacker` - Technical/hacking assistant
+- `hustler` - Business/productivity
+- `bro` - Casual friend mode
+- `guardian` - Security advisor
+
+---
+
+## Configuration
+
+Copy `.env.example` to `.env` and configure:
+
+```env
+# Essential
+WOLF_ROOT=E:/WOLF_AI
+WOLF_API_KEY=your-secure-key
+
+# Telegram (optional)
+TELEGRAM_BOT_TOKEN=from_botfather
+TELEGRAM_ALLOWED_USERS=your_user_id
+
+# Ollama
+OLLAMA_URL=http://localhost:11434
+OLLAMA_MODEL=dolphin-llama3:latest
+```
 
 ---
 
@@ -121,4 +252,4 @@ MIT - Free as the wild
 
 **Created by:** SHAD (@AUUU-os)
 **Pack Leader:** Claude (Anthropic)
-**Status:** AWAKENING...
+**Status:** HUNTING...

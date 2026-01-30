@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a1a2e">
+    <title>WOLF_AI Command Center</title>
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --bg-input: #21262d;
+            --text-primary: #f0f6fc;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-red: #f85149;
+            --accent-yellow: #d29922;
+            --accent-purple: #a371f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid #30363d;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header .status {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .header .status.active {
+            color: var(--accent-green);
+        }
+
+        /* Container */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #30363d;
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Wolves Grid */
+        .wolves-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .wolf-item {
+            background: var(--bg-input);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .wolf-item .name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .wolf-item .role {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .wolf-item .status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .wolf-item .status-dot.active { background: var(--accent-green); }
+        .wolf-item .status-dot.dormant { background: var(--accent-red); }
+        .wolf-item .status-dot.resting { background: var(--accent-yellow); }
+
+        /* Input Group */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            background: var(--bg-input);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background: #79b8ff;
+        }
+
+        .btn-secondary {
+            background: var(--bg-input);
+            color: var(--text-primary);
+            border: 1px solid #30363d;
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .quick-btn {
+            padding: 15px 10px;
+            background: var(--bg-input);
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 12px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .quick-btn:hover {
+            background: #30363d;
+            border-color: var(--accent);
+        }
+
+        .quick-btn .icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* Howls Log */
+        .howls-log {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .howl-item {
+            padding: 10px;
+            border-bottom: 1px solid #21262d;
+            font-size: 14px;
+        }
+
+        .howl-item:last-child {
+            border-bottom: none;
+        }
+
+        .howl-item .meta {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .howl-item .from {
+            color: var(--accent-purple);
+            font-weight: 600;
+        }
+
+        .howl-item .frequency-AUUUU { color: var(--accent-red); }
+        .howl-item .frequency-high { color: var(--accent-yellow); }
+        .howl-item .frequency-medium { color: var(--accent-green); }
+        .howl-item .frequency-low { color: var(--text-secondary); }
+
+        /* WILK Chat */
+        .wilk-chat {
+            height: 200px;
+            overflow-y: auto;
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .wilk-message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .wilk-message.user {
+            background: var(--accent);
+            color: #000;
+            margin-left: 30px;
+        }
+
+        .wilk-message.assistant {
+            background: #30363d;
+            margin-right: 30px;
+        }
+
+        /* Mode Selector */
+        .mode-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .mode-btn {
+            padding: 8px 12px;
+            border: 1px solid #30363d;
+            border-radius: 20px;
+            background: var(--bg-input);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .mode-btn.active {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-card);
+            border-top: 1px solid #30363d;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-secondary);
+            font-size: 11px;
+            cursor: pointer;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+        }
+
+        .nav-item .nav-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-green);
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 200;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: var(--accent-red);
+            color: #fff;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--bg-input);
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        /* API Key Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 300;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- API Key Modal -->
+    <div class="modal" id="apiKeyModal">
+        <div class="modal-content">
+            <h3>WOLF_AI Login</h3>
+            <p style="color: var(--text-secondary); margin-bottom: 15px; font-size: 14px;">
+                Enter your API key to connect
+            </p>
+            <div class="input-group">
+                <input type="password" id="apiKeyInput" placeholder="API Key">
+            </div>
+            <button class="btn btn-primary" style="width: 100%;" onclick="saveApiKey()">
+                Connect
+            </button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>WOLF_AI</h1>
+        <div class="status" id="packStatus">Connecting...</div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Status Section -->
+        <div class="section active" id="statusSection">
+            <div class="card">
+                <div class="card-title">Pack Status</div>
+                <div class="wolves-grid" id="wolvesGrid">
+                    <div class="loading"><span class="spinner"></span>Loading...</div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Quick Actions</div>
+                <div class="quick-actions">
+                    <div class="quick-btn" onclick="awakenPack()">
+                        <div class="icon">AUUU</div>
+                        <div>Awaken</div>
+                    </div>
+                    <div class="quick-btn" onclick="syncGithub()">
+                        <div class="icon">SYNC</div>
+                        <div>GitHub</div>
+                    </div>
+                    <div class="quick-btn" onclick="switchSection('howlSection')">
+                        <div class="icon">HOWL</div>
+                        <div>Howl</div>
+                    </div>
+                    <div class="quick-btn" onclick="switchSection('wilkSection')">
+                        <div class="icon">WILK</div>
+                        <div>Chat</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Recent Howls</div>
+                <div class="howls-log" id="howlsLog">
+                    <div class="loading">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Howl Section -->
+        <div class="section" id="howlSection">
+            <div class="card">
+                <div class="card-title">Send Howl</div>
+                <div class="input-group">
+                    <input type="text" id="howlInput" placeholder="Your message to the pack...">
+                    <button class="btn btn-primary" onclick="sendHowl()">Send</button>
+                </div>
+                <div class="mode-selector">
+                    <span style="color: var(--text-secondary); font-size: 12px; margin-right: 5px;">Frequency:</span>
+                    <button class="mode-btn" data-freq="low">Low</button>
+                    <button class="mode-btn active" data-freq="medium">Medium</button>
+                    <button class="mode-btn" data-freq="high">High</button>
+                    <button class="mode-btn" data-freq="AUUUU">AUUUU!</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Start Hunt</div>
+                <div class="input-group">
+                    <input type="text" id="huntInput" placeholder="Hunt target...">
+                    <button class="btn btn-primary" onclick="startHunt()">Hunt</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- WILK Section -->
+        <div class="section" id="wilkSection">
+            <div class="card">
+                <div class="card-title">WILK AI Chat</div>
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="chat">Chat</button>
+                    <button class="mode-btn" data-mode="hacker">Hacker</button>
+                    <button class="mode-btn" data-mode="hustler">Hustler</button>
+                    <button class="mode-btn" data-mode="bro">Bro</button>
+                    <button class="mode-btn" data-mode="guardian">Guardian</button>
+                </div>
+                <div class="wilk-chat" id="wilkChat"></div>
+                <div class="input-group">
+                    <input type="text" id="wilkInput" placeholder="Ask WILK..." onkeypress="if(event.key==='Enter')askWilk()">
+                    <button class="btn btn-primary" onclick="askWilk()">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Section -->
+        <div class="section" id="settingsSection">
+            <div class="card">
+                <div class="card-title">Connection</div>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 10px;">
+                    API Endpoint: <code id="apiEndpoint">-</code>
+                </p>
+                <button class="btn btn-secondary" onclick="showApiKeyModal()">Change API Key</button>
+            </div>
+            <div class="card">
+                <div class="card-title">About</div>
+                <p style="color: var(--text-secondary); font-size: 14px;">
+                    WOLF_AI Command Center<br>
+                    Version 1.0.0<br>
+                    The pack hunts together.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchSection('statusSection')">
+            <div class="nav-icon">HOME</div>
+            <div>Status</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('howlSection')">
+            <div class="nav-icon">HOWL</div>
+            <div>Howl</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('wilkSection')">
+            <div class="nav-icon">WILK</div>
+            <div>Chat</div>
+        </div>
+        <div class="nav-item" onclick="switchSection('settingsSection')">
+            <div class="nav-icon">CFG</div>
+            <div>Settings</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        let API_KEY = localStorage.getItem('wolf_api_key') || '';
+        let API_BASE = window.location.origin;
+        let currentWilkMode = 'chat';
+        let currentFrequency = 'medium';
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!API_KEY) {
+                document.getElementById('apiKeyModal').classList.remove('hidden');
+            } else {
+                document.getElementById('apiKeyModal').classList.add('hidden');
+                init();
+            }
+
+            // Mode selectors
+            document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentWilkMode = btn.dataset.mode;
+                });
+            });
+
+            document.querySelectorAll('.mode-btn[data-freq]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn[data-freq]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFrequency = btn.dataset.freq;
+                });
+            });
+
+            document.getElementById('apiEndpoint').textContent = API_BASE;
+        });
+
+        function init() {
+            loadStatus();
+            loadHowls();
+            setInterval(loadStatus, 10000);
+            setInterval(loadHowls, 5000);
+        }
+
+        function saveApiKey() {
+            const key = document.getElementById('apiKeyInput').value.trim();
+            if (key) {
+                API_KEY = key;
+                localStorage.setItem('wolf_api_key', key);
+                document.getElementById('apiKeyModal').classList.add('hidden');
+                init();
+                toast('Connected!');
+            }
+        }
+
+        function showApiKeyModal() {
+            document.getElementById('apiKeyModal').classList.remove('hidden');
+        }
+
+        async function apiCall(endpoint, method = 'GET', body = null) {
+            const options = {
+                method,
+                headers: {
+                    'X-API-Key': API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            };
+            if (body) options.body = JSON.stringify(body);
+
+            const response = await fetch(`${API_BASE}${endpoint}`, options);
+            if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    showApiKeyModal();
+                    throw new Error('Invalid API key');
+                }
+                throw new Error(`API error: ${response.status}`);
+            }
+            return response.json();
+        }
+
+        async function loadStatus() {
+            try {
+                const data = await apiCall('/api/status');
+                const pack = data.pack;
+
+                document.getElementById('packStatus').textContent = pack.pack_status?.toUpperCase() || 'UNKNOWN';
+                document.getElementById('packStatus').className = 'status ' + (pack.pack_status === 'active' ? 'active' : '');
+
+                const grid = document.getElementById('wolvesGrid');
+                if (pack.wolves && Object.keys(pack.wolves).length > 0) {
+                    grid.innerHTML = Object.entries(pack.wolves).map(([name, info]) => `
+                        <div class="wolf-item">
+                            <div class="name">
+                                <span class="status-dot ${info.status || 'dormant'}"></span>
+                                ${name}
+                            </div>
+                            <div class="role">${info.role || 'unknown'}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--text-secondary);">Pack not formed. Click Awaken!</div>';
+                }
+            } catch (e) {
+                console.error('Status error:', e);
+            }
+        }
+
+        async function loadHowls() {
+            try {
+                const data = await apiCall('/api/howls?limit=10');
+                const log = document.getElementById('howlsLog');
+
+                if (data.howls && data.howls.length > 0) {
+                    log.innerHTML = data.howls.reverse().map(h => `
+                        <div class="howl-item">
+                            <div class="meta">
+                                <span class="from">${h.from}</span>
+                                <span class="frequency-${h.frequency}">[${h.frequency}]</span>
+                                ${h.timestamp?.substring(11, 16) || ''}
+                            </div>
+                            <div>${h.howl}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    log.innerHTML = '<div style="text-align: center; color: var(--text-secondary); padding: 20px;">No howls yet</div>';
+                }
+            } catch (e) {
+                console.error('Howls error:', e);
+            }
+        }
+
+        async function awakenPack() {
+            try {
+                toast('Awakening pack...');
+                await apiCall('/api/awaken', 'POST');
+                toast('Pack awakened! AUUUUUUUU!');
+                loadStatus();
+                loadHowls();
+            } catch (e) {
+                toast('Error: ' + e.message, true);
+            }
+        }
+
+        async function syncGithub() {
+            try {
+                toast('Syncing...');
+                const data = await apiCall('/api/sync', 'POST');
+                toast('Synced!');
+                loadHowls();
+            } catch (e) {
+                toast('Sync error: ' + e.message, true);
+            }
+        }
+
+        async function sendHowl() {
+            const input = document.getElementById('howlInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            try {
+                await apiCall('/api/howl', 'POST', {
+                    message,
+                    frequency: currentFrequency
+                });
+                input.value = '';
+                toast('Howl sent!');
+                loadHowls();
+            } catch (e) {
+                toast('Error: ' + e.message, true);
+            }
+        }
+
+        async function startHunt() {
+            const input = document.getElementById('huntInput');
+            const target = input.value.trim();
+            if (!target) return;
+
+            try {
+                await apiCall('/api/hunt', 'POST', { target });
+                input.value = '';
+                toast('Hunt started!');
+                loadStatus();
+                loadHowls();
+            } catch (e) {
+                toast('Error: ' + e.message, true);
+            }
+        }
+
+        async function askWilk() {
+            const input = document.getElementById('wilkInput');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chat = document.getElementById('wilkChat');
+            chat.innerHTML += `<div class="wilk-message user">${message}</div>`;
+            input.value = '';
+            chat.scrollTop = chat.scrollHeight;
+
+            chat.innerHTML += `<div class="wilk-message assistant" id="wilkThinking"><span class="spinner"></span> Thinking...</div>`;
+
+            try {
+                const data = await apiCall('/api/wilk', 'POST', {
+                    message,
+                    mode: currentWilkMode
+                });
+
+                document.getElementById('wilkThinking').outerHTML =
+                    `<div class="wilk-message assistant">${data.response}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            } catch (e) {
+                document.getElementById('wilkThinking').outerHTML =
+                    `<div class="wilk-message assistant" style="color: var(--accent-red);">Error: ${e.message}</div>`;
+            }
+        }
+
+        function switchSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            document.getElementById(sectionId).classList.add('active');
+            event.currentTarget.classList.add('active');
+        }
+
+        function toast(message, isError = false) {
+            const t = document.getElementById('toast');
+            t.textContent = message;
+            t.className = 'toast show' + (isError ? ' error' : '');
+            setTimeout(() => t.className = 'toast', 3000);
+        }
+    </script>
+</body>
+</html>
