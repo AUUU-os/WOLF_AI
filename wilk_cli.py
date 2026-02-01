@@ -18,11 +18,12 @@ if sys.platform == 'win32':
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent))
 
+from config import LOGS_PATH
 from modules.wilk import get_wilk, ask_dolphin
 from modules.wilk.dolphin import get_client
 
 # Paths
-LOG_DIR = Path("E:/WOLF_AI/logs")
+LOG_DIR = LOGS_PATH
 LOG_DIR.mkdir(exist_ok=True)
 
 # Current mode - default to chat for conversations
