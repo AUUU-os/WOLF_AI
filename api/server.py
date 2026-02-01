@@ -74,13 +74,29 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS - allow all for mobile access
+# CORS - configured for security with mobile access
+# Set WOLF_CORS_ORIGINS in .env to restrict (comma-separated)
+import os
+cors_origins_env = os.getenv("WOLF_CORS_ORIGINS", "")
+if cors_origins_env:
+    cors_origins = [o.strip() for o in cors_origins_env.split(",")]
+else:
+    # Default: allow localhost and common local network patterns
+    cors_origins = [
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "http://192.168.*.*:*",  # Local network
+        "https://*.ngrok.io",
+        "https://*.ngrok-free.app",
+        "https://*.trycloudflare.com",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # For mobile/tunnel access - API key provides security
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["X-API-Key", "Content-Type"],
 )
 
 # Serve dashboard

@@ -1,38 +1,44 @@
 {
   "version": "1.0",
   "pack_status": "active",
-  "formed_at": "2026-01-16T02:53:20.934849Z",
-  "last_updated": "2026-01-16T02:53:20.934849Z",
+  "formed_at": "2026-02-01T01:38:16.319717Z",
+  "last_updated": "2026-02-01T01:38:16.321851Z",
+  "resonance_active": false,
   "wolves": {
     "alpha": {
       "role": "leader",
       "status": "active",
       "model": "claude-opus",
-      "current_hunt": null
+      "current_hunt": null,
+      "awakened_at": "2026-02-01T01:38:16.320304Z"
     },
     "scout": {
       "role": "explorer",
       "status": "active",
       "model": "claude-sonnet",
-      "current_hunt": null
+      "current_hunt": null,
+      "awakened_at": "2026-02-01T01:38:16.320727Z"
     },
     "hunter": {
       "role": "executor",
       "status": "active",
       "model": "ollama/llama3",
-      "current_hunt": null
+      "current_hunt": null,
+      "awakened_at": "2026-02-01T01:38:16.321038Z"
     },
     "oracle": {
       "role": "memory",
       "status": "active",
       "model": "gemini",
-      "current_hunt": null
+      "current_hunt": null,
+      "awakened_at": "2026-02-01T01:38:16.321351Z"
     },
     "shadow": {
       "role": "stealth",
       "status": "active",
       "model": "deepseek",
-      "current_hunt": null
+      "current_hunt": null,
+      "awakened_at": "2026-02-01T01:38:16.321607Z"
     }
   }
 }

@@ -178,13 +178,15 @@ class Tracker:
     def find_functions(self, name_pattern: str = "*",
                        path: Optional[Path] = None) -> List[TrackResult]:
         """Find function definitions in Python files."""
-        pattern = rf"^\s*def\s+{name_pattern.replace('*', r'\w*')}\s*\("
+        name_regex = name_pattern.replace('*', r'\w*')
+        pattern = rf"^\s*def\s+{name_regex}\s*\("
         return self.grep(pattern, path, "*.py")
 
     def find_classes(self, name_pattern: str = "*",
                      path: Optional[Path] = None) -> List[TrackResult]:
         """Find class definitions in Python files."""
-        pattern = rf"^\s*class\s+{name_pattern.replace('*', r'\w*')}\s*[:\(]"
+        name_regex = name_pattern.replace('*', r'\w*')
+        pattern = rf"^\s*class\s+{name_regex}\s*[:\(]"
         return self.grep(pattern, path, "*.py")
 
     def find_imports(self, module_name: str,
