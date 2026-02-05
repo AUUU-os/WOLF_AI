@@ -7,6 +7,7 @@ Functional modules for the wolf pack:
 - howl: Communication system
 - evolve: Self-improvement and learning
 - wilk: Local AI assistant (Dolphin/Ollama)
+- claw: OpenClaw bridge (external AI ecosystem)
 """
 
 from .hunt import (
@@ -55,6 +56,15 @@ from .evolve import (
     get_evolution
 )
 
+from .claw import (
+    Claw,
+    ClawBridge,
+    ClawMessage,
+    get_claw,
+    ask_claw,
+    claw_execute
+)
+
 __all__ = [
     # Hunt
     "Hunt", "HuntQueue", "HuntExecutor", "HuntStatus", "HuntPriority",
@@ -69,5 +79,9 @@ __all__ = [
 
     # Evolve
     "Lesson", "Evolution", "EvolutionTracker", "Arena",
-    "get_evolution_tracker", "get_arena", "learn", "evolve_metric", "get_evolution"
+    "get_evolution_tracker", "get_arena", "learn", "evolve_metric", "get_evolution",
+
+    # Claw (OpenClaw Bridge)
+    "Claw", "ClawBridge", "ClawMessage",
+    "get_claw", "ask_claw", "claw_execute"
 ]
