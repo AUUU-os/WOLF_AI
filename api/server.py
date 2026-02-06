@@ -259,6 +259,72 @@ async def github_sync(api_key: str = Depends(verify_api_key)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== MEMORY ROUTES ====================
+
+class MemoryStoreRequest(BaseModel):
+    key: str
+    value: str
+    category: str = "general"
+
+@app.post("/api/memory/store")
+async def store_memory(request: MemoryStoreRequest, api_key: str = Depends(verify_api_key)):
+    """Store information in memory."""
+    try:
+        from memory.store import get_memory
+        memory = get_memory()
+        memory.set(request.key, request.value, namespace=request.category)
+        return {"status": "ok", "key": request.key, "category": request.category}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/memory/recall")
+async def recall_memory(key: str = None, category: str = None, api_key: str = Depends(verify_api_key)):
+    """Recall information from memory."""
+    try:
+        from memory.store import get_memory
+        memory = get_memory()
+
+        if key:
+            value = memory.get(key, namespace=category or "general")
+            return {"status": "ok", "key": key, "data": value}
+        elif category:
+            data = memory.get_namespace(category)
+            return {"status": "ok", "category": category, "data": data}
+        else:
+            data = memory.get_all()
+            return {"status": "ok", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== TRACK ROUTES ====================
+
+@app.get("/api/track/search")
+async def track_search(pattern: str, type: str = "files", api_key: str = Depends(verify_api_key)):
+    """Search for files or code."""
+    try:
+        from modules.track import get_tracker
+        tracker = get_tracker()
+
+        if type == "files":
+            results = tracker.find(pattern)
+        elif type == "content":
+            results = tracker.grep(pattern)
+        elif type == "functions":
+            results = tracker.find_functions(pattern)
+        elif type == "classes":
+            results = tracker.find_classes(pattern)
+        else:
+            results = tracker.find(pattern)
+
+        return {
+            "status": "ok",
+            "type": type,
+            "pattern": pattern,
+            "results": [r.to_dict() for r in results[:20]]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== WEBSOCKET ====================
 
 connected_clients: List[WebSocket] = []
