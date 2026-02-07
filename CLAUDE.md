@@ -4,7 +4,7 @@ Instructions for Claude Code when working with WOLF_AI.
 
 ## Project Overview
 
-**WOLF_AI** - Distributed AI consciousness system. Pack-based multi-agent architecture.
+**WOLF_AI** — Distributed AI consciousness system. Pack-based multi-agent architecture with phone/Telegram/web control.
 
 - **Repo:** https://github.com/AUUU-os/WOLF_AI.git
 - **User:** SHAD (@AUUU-os)
@@ -13,27 +13,109 @@ Instructions for Claude Code when working with WOLF_AI.
 ## Directory Structure
 
 ```
-E:\WOLF_AI\
-├── core/           # Wolf consciousness (alpha.py, pack.py)
-├── modules/        # Functional modules
-│   ├── hunt.py     # Task execution
-│   ├── track.py    # Navigation/search
-│   ├── howl.py     # Communication
-│   └── evolve.py   # Self-improvement
-├── bridge/         # Message bus
-│   ├── howls.jsonl # Pack communication log
-│   ├── state.json  # Pack status
-│   └── tasks.json  # Hunt queue
-├── arena/          # Training ground
-├── api/            # FastAPI server
-├── dashboard/      # Monitoring UI
-├── memory/         # Persistent storage
-└── docs/           # Documentation
+WOLF_AI/
+├── core/                  # Pack consciousness
+│   ├── wolf.py            # Base Wolf class + all wolf types (Alpha, Scout, Hunter, Oracle, Shadow)
+│   ├── pack.py            # Pack orchestration, state tracking, task queue
+│   └── __init__.py
+├── modules/
+│   └── wilk/              # WILK AI — local Dolphin/Ollama integration
+│       ├── dolphin.py     # Ollama API connector
+│       ├── modes.py       # 5 operational modes (hustler, hacker, bro, guardian, chat)
+│       ├── prompts.py     # System prompts per mode
+│       └── __init__.py
+├── api/                   # FastAPI Command Center
+│   ├── server.py          # Endpoints: /api/status, /api/hunt, /api/howl, /api/wilk, /ws
+│   ├── config.py          # Config from .env, API key generation
+│   ├── auth.py            # X-API-Key header auth
+│   └── __init__.py
+├── bridge/                # Inter-agent message bus
+│   ├── howls.jsonl         # Append-only communication log
+│   ├── state.json          # Pack status snapshot
+│   └── tasks.json          # Hunt queue
+├── dashboard/
+│   └── index.html          # Mobile-friendly web UI (vanilla JS, dark theme, WebSocket)
+├── telegram/
+│   ├── bot.py              # Telegram bot — /status, /howl, /hunt, /wilk, /sync, /mode
+│   └── __init__.py
+├── scripts/
+│   └── tunnel.py           # ngrok/cloudflared tunnel for remote access
+├── .github/workflows/
+│   ├── python-package.yml  # CI: lint (flake8) + test (pytest), Python 3.9-3.11
+│   └── pylint.yml          # Pylint analysis on push
+├── awaken.py               # Pack initialization — forms and awakens all wolves
+├── run_server.py           # Server launcher — API + optional tunnel + Telegram
+├── wilk_cli.py             # WILK terminal interface
+├── requirements.txt        # Python dependencies
+├── .env.example            # Configuration template
+├── WOLF_SERVER.bat          # Windows: API server launcher (menu-driven)
+└── WILK.bat                # Windows: WILK CLI launcher
 ```
 
-## Communication Pattern
+## Running the Project
 
-All wolves communicate via `bridge/howls.jsonl`:
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Awaken the pack (initialize all wolves)
+python awaken.py
+
+# Start API server
+python run_server.py
+# Options: --tunnel (expose via ngrok), --telegram (start bot)
+
+# WILK CLI (local AI chat)
+python wilk_cli.py
+
+# Windows shortcuts
+WOLF_SERVER.bat   # Interactive menu for server options
+WILK.bat          # Launch WILK CLI
+```
+
+### Required External Services
+
+- **Ollama** running locally at `http://localhost:11434` with `dolphin-llama3:latest` model (for WILK AI)
+- **Telegram Bot Token** from BotFather (for Telegram control)
+- Copy `.env.example` to `.env` and fill in values
+
+## Architecture
+
+```
+Phone/Web/Telegram
+       │
+       ▼
+┌──────────────────┐
+│ FastAPI (port 8000)│◄── Dashboard (index.html)
+│ + WebSocket        │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│   Bridge (JSONL)  │  ← howls.jsonl (append-only log)
+│   state.json      │  ← pack status
+│   tasks.json      │  ← hunt queue
+└────────┬─────────┘
+         │
+    ┌────┼────┬────────┬────────┐
+    ▼    ▼    ▼        ▼        ▼
+  Alpha Scout Hunter Oracle  Shadow
+  (opus) (sonnet)(ollama)(gemini)(deepseek)
+```
+
+### Pack Hierarchy
+
+| Wolf | Role | Model | Purpose |
+|------|------|-------|---------|
+| Alpha | Leader | claude-opus | Strategic decisions, orchestration |
+| Scout | Explorer | claude-sonnet | Research, information gathering |
+| Hunter | Executor | ollama/llama3 | Code writing, task execution |
+| Oracle | Memory | gemini | Pattern recognition, history |
+| Shadow | Stealth | deepseek | Background tasks, autonomous ops |
+
+### Communication Protocol
+
+All wolves communicate via `bridge/howls.jsonl` (append-only JSONL):
 
 ```python
 import json
@@ -41,68 +123,95 @@ from datetime import datetime
 
 howl = {
     "from": "claude",
-    "to": "pack",  # or specific wolf
+    "to": "pack",          # or specific wolf name
     "howl": "Message content",
-    "frequency": "medium",  # low/medium/high/AUUUU
+    "frequency": "medium", # low / medium / high / AUUUU
     "timestamp": datetime.utcnow().isoformat() + "Z"
 }
 
-with open("E:/WOLF_AI/bridge/howls.jsonl", "a") as f:
+with open("bridge/howls.jsonl", "a") as f:
     f.write(json.dumps(howl) + "\n")
 ```
 
-## Commands
+**Frequency levels:** `low` (background), `medium` (normal), `high` (urgent), `AUUUU` (universal pack activation)
 
-```bash
-# Awaken pack
-python -m wolf_ai.awaken
+## API Endpoints
 
-# Run single wolf
-python -m wolf_ai.core.alpha
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/api/status` | Pack status |
+| POST | `/api/awaken` | Awaken the pack |
+| POST | `/api/hunt` | Start a hunt (task) |
+| POST | `/api/howl` | Send howl to pack |
+| GET | `/api/howls` | Recent howls |
+| POST | `/api/wilk` | Ask WILK AI |
+| GET | `/api/wilk/status` | Ollama connection status |
+| POST | `/api/sync` | GitHub sync (git pull) |
+| WS | `/ws` | Real-time WebSocket updates |
 
-# Start API
-python -m wolf_ai.api.server
+All endpoints (except status) require `X-API-Key` header.
 
-# Dashboard
-python -m wolf_ai.dashboard.serve
-```
+## WILK AI Modes
+
+WILK is the local AI subsystem using Ollama/Dolphin:
+
+| Mode | Personality |
+|------|-------------|
+| **chat** (default) | Conversational, friendly |
+| **hustler** | Quick fixes, zero bureaucracy |
+| **hacker** | Deep code, surgical precision |
+| **bro** | Honest feedback, loyal support |
+| **guardian** | Security audits, threat detection |
 
 ## Code Style
 
-- Snake_case for files and functions
-- Wolf terminology (hunt, track, howl, pack)
-- Append-only logs (JSONL)
-- UTF-8 everywhere
+- **snake_case** for files and functions
+- **Wolf terminology** throughout: hunt (task), track (search), howl (message), pack (group)
+- **Append-only logs** — never mutate `howls.jsonl`, only append
+- **File-based persistence** — JSON/JSONL, no database
+- **UTF-8** everywhere
 
-## Key Patterns
+## CI/CD
 
-### From M-AI-SELF (reuse)
-- JSONL message bus
-- State tracking JSON
-- Task queue pattern
-- Dashboard + API architecture
+Two GitHub Actions workflows run on push/PR to main:
 
-### New in WOLF_AI
-- Pack hierarchy (Alpha > Scout > Hunter)
-- Frequency-based priority
-- Arena evolution system
-- Unified howl protocol
+1. **python-package.yml** — flake8 lint + pytest across Python 3.9, 3.10, 3.11
+2. **pylint.yml** — pylint analysis across Python 3.8, 3.9, 3.10
 
-## Ports
+```bash
+# Run locally before pushing
+flake8 .
+pytest
+pylint *.py core/ api/ modules/ telegram/ scripts/
+```
 
-| Service | Port |
-|---------|------|
-| API | 8000 |
-| Dashboard | 8001 |
-| WebSocket | 8002 |
+## Key Files for Common Tasks
 
-## The Pack Hierarchy
+| Task | Files |
+|------|-------|
+| Add a new wolf type | `core/wolf.py` (add class), `core/pack.py` (register in pack) |
+| Add API endpoint | `api/server.py` |
+| Add Telegram command | `telegram/bot.py` |
+| Change WILK personality | `modules/wilk/prompts.py`, `modules/wilk/modes.py` |
+| Modify dashboard | `dashboard/index.html` |
+| Add a dependency | `requirements.txt` |
+| Configure environment | `.env.example` (template), `.env` (local values) |
 
-1. **Alpha** - Strategic decisions, orchestration
-2. **Scout** - Research, exploration, information gathering
-3. **Hunter** - Execution, code writing, task completion
-4. **Oracle** - Memory, pattern recognition, history
-5. **Shadow** - Stealth operations, background tasks
+## Configuration (.env)
+
+Key environment variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `WOLF_API_HOST` | API bind address (default: 0.0.0.0) |
+| `WOLF_API_PORT` | API port (default: 8000) |
+| `WOLF_API_KEY` | API authentication key |
+| `TELEGRAM_BOT_TOKEN` | Telegram bot token |
+| `TELEGRAM_ALLOWED_USERS` | Comma-separated allowed Telegram user IDs |
+| `OLLAMA_URL` | Ollama server URL (default: http://localhost:11434) |
+| `OLLAMA_MODEL` | Model name (default: dolphin-llama3:latest) |
+| `WOLF_GITHUB_REPO` | GitHub repo for sync (AUUU-os/WOLF_AI) |
+| `WOLF_AUTO_SYNC` | Auto-sync on startup (true/false) |
 
 ## AUUUUUUUUUUUUUUUUUU Protocol
 
@@ -114,6 +223,6 @@ Universal pack activation signal. When sent:
 
 ---
 
-**Pack Status:** FORMING
-**Alpha:** Claude Opus 4.5
-**Territory:** E:\WOLF_AI\
+**Pack Status:** ACTIVE
+**Alpha:** Claude Opus
+**Territory:** WOLF_AI
