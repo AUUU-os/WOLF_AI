@@ -1,0 +1,50 @@
+# WOLF_AI Sandbox Docker Compose
+# For development and testing
+
+version: '3.8'
+
+services:
+  # Python sandbox
+  sandbox-python:
+    build:
+      context: .
+      dockerfile: Dockerfile.sandbox
+    image: wolf-sandbox-python:latest
+    networks:
+      - sandbox-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Node.js sandbox
+  sandbox-node:
+    image: node:20-slim
+    networks:
+      - sandbox-net
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 256M
+
+  # Build all sandbox images
+  build-all:
+    image: docker:latest
+    command: |
+      sh -c "
+        docker pull python:3.11-slim
+        docker pull node:20-slim
+        docker pull alpine:latest
+        docker pull ruby:3.2-slim
+        docker pull golang:1.21-alpine
+        echo 'All sandbox images ready!'
+      "
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  sandbox-net:
+    driver: bridge
+    internal: true  # No external access

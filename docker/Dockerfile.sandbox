@@ -1,0 +1,29 @@
+# WOLF_AI Hunter Sandbox Base Image
+# Lightweight Python environment for code execution
+
+FROM python:3.11-slim
+
+# Security: Run as non-root user
+RUN groupadd -r wolf && useradd -r -g wolf wolf
+
+# Install common packages
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Common Python packages
+RUN pip install --no-cache-dir \
+    requests \
+    httpx \
+    numpy \
+    pandas
+
+# Create code directory
+RUN mkdir /code && chown wolf:wolf /code
+
+# Switch to non-root user
+USER wolf
+WORKDIR /code
+
+# Default command
+CMD ["python", "--version"]

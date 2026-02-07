@@ -247,6 +247,144 @@ paths:
                   data:
                     type: object
 
+  /api/alpha/status:
+    get:
+      operationId: getAlphaStatus
+      summary: Check Alpha brain status
+      description: Check if Alpha brain (Claude API) is available for strategic thinking
+      responses:
+        '200':
+          description: Alpha brain status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  available:
+                    type: boolean
+                  model:
+                    type: string
+
+  /api/alpha/think:
+    post:
+      operationId: alphaThink
+      summary: Ask Alpha to think
+      description: Get strategic analysis and insights from Alpha wolf's Claude-powered brain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaThinkRequest'
+      responses:
+        '200':
+          description: Alpha's thought
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  response:
+                    type: string
+
+  /api/alpha/plan:
+    post:
+      operationId: alphaPlan
+      summary: Create strategic plan
+      description: Ask Alpha to create a detailed plan for an objective
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaPlanRequest'
+      responses:
+        '200':
+          description: Strategic plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  plan:
+                    type: object
+
+  /api/alpha/coordinate:
+    post:
+      operationId: alphaCoordinate
+      summary: Coordinate pack
+      description: Ask Alpha to assign wolves to tasks based on a situation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaCoordinateRequest'
+      responses:
+        '200':
+          description: Wolf assignments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  assignments:
+                    type: object
+
+  /api/sandbox/status:
+    get:
+      operationId: getSandboxStatus
+      summary: Check sandbox status
+      description: Check if Docker sandbox is available for code execution
+      responses:
+        '200':
+          description: Sandbox status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  docker_available:
+                    type: boolean
+                  memory_limit:
+                    type: string
+                  timeout:
+                    type: integer
+
+  /api/sandbox/execute:
+    post:
+      operationId: sandboxExecute
+      summary: Execute code in sandbox
+      description: Run code safely in a Docker container
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxExecuteRequest'
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  result:
+                    type: object
+
   /api/track/search:
     get:
       operationId: trackSearch
@@ -389,6 +527,60 @@ components:
         stream:
           type: boolean
           default: false
+
+    SandboxExecuteRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Source code to execute
+        language:
+          type: string
+          enum: [python, javascript, bash, ruby, go]
+          default: python
+          description: Programming language
+
+    AlphaThinkRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          description: Question or topic for Alpha to analyze
+        context:
+          type: string
+          description: Additional context for the analysis
+
+    AlphaPlanRequest:
+      type: object
+      required:
+        - objective
+      properties:
+        objective:
+          type: string
+          description: What needs to be accomplished
+        constraints:
+          type: array
+          items:
+            type: string
+          description: Limitations or requirements
+
+    AlphaCoordinateRequest:
+      type: object
+      required:
+        - situation
+      properties:
+        situation:
+          type: string
+          description: Current situation requiring coordination
+        wolves:
+          type: array
+          items:
+            type: string
+          description: Available wolves (defaults to all)
 
     MemoryStoreRequest:
       type: object

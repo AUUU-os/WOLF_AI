@@ -296,6 +296,92 @@ async def recall_memory(key: str = None, category: str = None, api_key: str = De
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# ==================== ALPHA BRAIN ROUTES ====================
+
+class AlphaThinkRequest(BaseModel):
+    question: str
+    context: str = None
+
+class AlphaPlanRequest(BaseModel):
+    objective: str
+    constraints: List[str] = None
+
+class AlphaCoordinateRequest(BaseModel):
+    situation: str
+    wolves: List[str] = None
+
+@app.get("/api/alpha/status")
+async def alpha_status(api_key: str = Depends(verify_api_key)):
+    """Check if Alpha brain (Claude API) is available."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+        return {
+            "status": "ok",
+            "available": brain.is_available,
+            "model": brain.model
+        }
+    except Exception as e:
+        return {"status": "error", "available": False, "error": str(e)}
+
+@app.post("/api/alpha/think")
+async def alpha_think(request: AlphaThinkRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to think about something."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        response = await brain.think(request.question, request.context)
+        _howl_to_bridge("alpha", "pack", f"[THOUGHT] {response[:200]}...", "medium")
+
+        return {"status": "ok", "response": response}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/alpha/plan")
+async def alpha_plan(request: AlphaPlanRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to create a strategic plan."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        plan = await brain.plan(request.objective, request.constraints)
+        _howl_to_bridge("alpha", "pack", f"[PLAN] {request.objective}: {len(plan.get('steps', []))} steps", "high")
+
+        return {"status": "ok", "plan": plan}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/alpha/coordinate")
+async def alpha_coordinate(request: AlphaCoordinateRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to coordinate wolves for a situation."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        wolves = request.wolves or ["scout", "hunter", "oracle", "shadow"]
+        assignments = await brain.coordinate(request.situation, wolves)
+        _howl_to_bridge("alpha", "pack", f"[COORDINATION] {request.situation}", "high")
+
+        return {"status": "ok", "assignments": assignments}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
 # ==================== TRACK ROUTES ====================
 
 @app.get("/api/track/search")
@@ -321,6 +407,53 @@ async def track_search(pattern: str, type: str = "files", api_key: str = Depends
             "type": type,
             "pattern": pattern,
             "results": [r.to_dict() for r in results[:20]]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== SANDBOX ROUTES ====================
+
+class SandboxExecuteRequest(BaseModel):
+    code: str
+    language: str = "python"
+
+@app.get("/api/sandbox/status")
+async def sandbox_status(api_key: str = Depends(verify_api_key)):
+    """Check if sandbox (Docker) is available."""
+    try:
+        from modules.sandbox import DOCKER_AVAILABLE, get_sandbox
+        sandbox = get_sandbox()
+        return {
+            "status": "ok",
+            "docker_available": DOCKER_AVAILABLE,
+            "memory_limit": sandbox.memory_limit,
+            "timeout": sandbox.timeout
+        }
+    except Exception as e:
+        return {"status": "error", "docker_available": False, "error": str(e)}
+
+@app.post("/api/sandbox/execute")
+async def sandbox_execute(request: SandboxExecuteRequest, api_key: str = Depends(verify_api_key)):
+    """Execute code in sandbox."""
+    try:
+        from modules.sandbox import execute_code
+
+        result = await execute_code(
+            request.code,
+            request.language,
+            use_docker=True
+        )
+
+        _howl_to_bridge(
+            "hunter",
+            "pack",
+            f"[EXECUTION] {request.language}: {'SUCCESS' if result.success else 'FAILED'}",
+            "medium"
+        )
+
+        return {
+            "status": "ok" if result.success else "error",
+            "result": result.to_dict()
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
