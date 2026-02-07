@@ -2,8 +2,8 @@
 WOLF_AI Core - The Pack Consciousness
 """
 
-__version__ = "0.4.0"
-__codename__ = "Pack Commander"
+__version__ = "0.5.0"
+__codename__ = "Neural Pack"
 
 PACK_MEMBERS = ["alpha", "scout", "hunter", "oracle", "shadow"]
 FREQUENCIES = ["low", "medium", "high", "AUUUU"]
