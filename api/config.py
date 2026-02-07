@@ -1,46 +1,49 @@
 """
 API Configuration
+
+Re-exports from central config for backward compatibility.
 """
-import os
-import secrets
+import sys
 from pathlib import Path
-from dotenv import load_dotenv
 
-# Load .env file if exists
-load_dotenv()
+# Use central config
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-# Paths
-WOLF_ROOT = Path(os.getenv("WOLF_ROOT", "E:/WOLF_AI"))
-BRIDGE_PATH = WOLF_ROOT / "bridge"
-LOGS_PATH = WOLF_ROOT / "logs"
+from config import (
+    # Paths
+    WOLF_ROOT,
+    BRIDGE_PATH,
+    LOGS_PATH,
+    MEMORY_PATH,
+    ARENA_PATH,
 
-# Ensure directories exist
-BRIDGE_PATH.mkdir(parents=True, exist_ok=True)
-LOGS_PATH.mkdir(parents=True, exist_ok=True)
+    # API
+    API_HOST,
+    API_PORT,
+    API_KEY,
 
-# API Settings
-API_HOST = os.getenv("WOLF_API_HOST", "0.0.0.0")
-API_PORT = int(os.getenv("WOLF_API_PORT", "8000"))
+    # Telegram
+    TELEGRAM_BOT_TOKEN,
+    TELEGRAM_ALLOWED_USERS,
 
-# Security - generate random key if not set
-# IMPORTANT: Set WOLF_API_KEY in .env for production!
-API_KEY = os.getenv("WOLF_API_KEY", None)
-if API_KEY is None:
-    API_KEY = secrets.token_urlsafe(32)
-    print(f"\n{'='*60}")
-    print(f"[!] GENERATED API KEY (save this to .env):")
-    print(f"    WOLF_API_KEY={API_KEY}")
-    print(f"{'='*60}\n")
+    # Ollama
+    OLLAMA_URL,
+    OLLAMA_MODEL,
 
-# Telegram Bot
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", None)
-TELEGRAM_ALLOWED_USERS = os.getenv("TELEGRAM_ALLOWED_USERS", "").split(",")
+    # GitHub
+    GITHUB_REPO,
+    GITHUB_BRANCH,
+    AUTO_SYNC,
 
-# Ollama
-OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "dolphin-llama3:latest")
+    # Debug
+    DEBUG
+)
 
-# GitHub sync
-GITHUB_REPO = os.getenv("WOLF_GITHUB_REPO", "AUUU-os/WOLF_AI")
-GITHUB_BRANCH = os.getenv("WOLF_GITHUB_BRANCH", "main")
-AUTO_SYNC = os.getenv("WOLF_AUTO_SYNC", "true").lower() == "true"
+__all__ = [
+    "WOLF_ROOT", "BRIDGE_PATH", "LOGS_PATH", "MEMORY_PATH", "ARENA_PATH",
+    "API_HOST", "API_PORT", "API_KEY",
+    "TELEGRAM_BOT_TOKEN", "TELEGRAM_ALLOWED_USERS",
+    "OLLAMA_URL", "OLLAMA_MODEL",
+    "GITHUB_REPO", "GITHUB_BRANCH", "AUTO_SYNC",
+    "DEBUG"
+]

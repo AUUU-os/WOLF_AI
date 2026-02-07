@@ -5,3 +5,9 @@
 {"from": "oracle", "to": "pack", "howl": "oracle awakens. Role: memory. Ready to hunt.", "frequency": "medium", "timestamp": "2026-01-16T02:53:20.934849Z"}
 {"from": "shadow", "to": "pack", "howl": "shadow awakens. Role: stealth. Ready to hunt.", "frequency": "medium", "timestamp": "2026-01-16T02:53:20.934849Z"}
 {"from": "pack", "to": "world", "howl": "PACK AWAKENED! All wolves active. AUUUUUUUUUUUUUUUUUU!", "frequency": "AUUUU", "timestamp": "2026-01-16T02:53:20.939863Z"}
+{"from": "alpha", "to": "pack", "howl": "alpha awakens. Role: leader. Ready to hunt.", "frequency": "medium", "timestamp": "2026-02-01T01:38:16.320307Z"}
+{"from": "scout", "to": "pack", "howl": "scout awakens. Role: explorer. Ready to hunt.", "frequency": "medium", "timestamp": "2026-02-01T01:38:16.320729Z"}
+{"from": "hunter", "to": "pack", "howl": "hunter awakens. Role: executor. Ready to hunt.", "frequency": "medium", "timestamp": "2026-02-01T01:38:16.321040Z"}
+{"from": "oracle", "to": "pack", "howl": "oracle awakens. Role: memory. Ready to hunt.", "frequency": "medium", "timestamp": "2026-02-01T01:38:16.321353Z"}
+{"from": "shadow", "to": "pack", "howl": "shadow awakens. Role: stealth. Ready to hunt.", "frequency": "medium", "timestamp": "2026-02-01T01:38:16.321609Z"}
+{"from": "pack", "to": "world", "howl": "PACK AWAKENED! All wolves active. AUUUUUUUUUUUUUUUUUU!", "frequency": "AUUUU", "timestamp": "2026-02-01T01:38:16.322344Z", "wolves_count": 5}

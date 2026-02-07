@@ -74,13 +74,29 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS - allow all for mobile access
+# CORS - configured for security with mobile access
+# Set WOLF_CORS_ORIGINS in .env to restrict (comma-separated)
+import os
+cors_origins_env = os.getenv("WOLF_CORS_ORIGINS", "")
+if cors_origins_env:
+    cors_origins = [o.strip() for o in cors_origins_env.split(",")]
+else:
+    # Default: allow localhost and common local network patterns
+    cors_origins = [
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "http://192.168.*.*:*",  # Local network
+        "https://*.ngrok.io",
+        "https://*.ngrok-free.app",
+        "https://*.trycloudflare.com",
+    ]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # For mobile/tunnel access - API key provides security
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["X-API-Key", "Content-Type"],
 )
 
 # Serve dashboard
@@ -240,6 +256,205 @@ async def github_sync(api_key: str = Depends(verify_api_key)):
         )
         _howl_to_bridge("api", "pack", f"GitHub sync: {result.stdout or 'up to date'}", "medium")
         return {"status": "ok", "output": result.stdout, "error": result.stderr}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== MEMORY ROUTES ====================
+
+class MemoryStoreRequest(BaseModel):
+    key: str
+    value: str
+    category: str = "general"
+
+@app.post("/api/memory/store")
+async def store_memory(request: MemoryStoreRequest, api_key: str = Depends(verify_api_key)):
+    """Store information in memory."""
+    try:
+        from memory.store import get_memory
+        memory = get_memory()
+        memory.set(request.key, request.value, namespace=request.category)
+        return {"status": "ok", "key": request.key, "category": request.category}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/memory/recall")
+async def recall_memory(key: str = None, category: str = None, api_key: str = Depends(verify_api_key)):
+    """Recall information from memory."""
+    try:
+        from memory.store import get_memory
+        memory = get_memory()
+
+        if key:
+            value = memory.get(key, namespace=category or "general")
+            return {"status": "ok", "key": key, "data": value}
+        elif category:
+            data = memory.get_namespace(category)
+            return {"status": "ok", "category": category, "data": data}
+        else:
+            data = memory.get_all()
+            return {"status": "ok", "data": data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== ALPHA BRAIN ROUTES ====================
+
+class AlphaThinkRequest(BaseModel):
+    question: str
+    context: str = None
+
+class AlphaPlanRequest(BaseModel):
+    objective: str
+    constraints: List[str] = None
+
+class AlphaCoordinateRequest(BaseModel):
+    situation: str
+    wolves: List[str] = None
+
+@app.get("/api/alpha/status")
+async def alpha_status(api_key: str = Depends(verify_api_key)):
+    """Check if Alpha brain (Claude API) is available."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+        return {
+            "status": "ok",
+            "available": brain.is_available,
+            "model": brain.model
+        }
+    except Exception as e:
+        return {"status": "error", "available": False, "error": str(e)}
+
+@app.post("/api/alpha/think")
+async def alpha_think(request: AlphaThinkRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to think about something."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        response = await brain.think(request.question, request.context)
+        _howl_to_bridge("alpha", "pack", f"[THOUGHT] {response[:200]}...", "medium")
+
+        return {"status": "ok", "response": response}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/alpha/plan")
+async def alpha_plan(request: AlphaPlanRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to create a strategic plan."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        plan = await brain.plan(request.objective, request.constraints)
+        _howl_to_bridge("alpha", "pack", f"[PLAN] {request.objective}: {len(plan.get('steps', []))} steps", "high")
+
+        return {"status": "ok", "plan": plan}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/alpha/coordinate")
+async def alpha_coordinate(request: AlphaCoordinateRequest, api_key: str = Depends(verify_api_key)):
+    """Ask Alpha to coordinate wolves for a situation."""
+    try:
+        from core.alpha import get_alpha_brain
+        brain = get_alpha_brain()
+
+        if not brain.is_available:
+            raise HTTPException(status_code=503, detail="Alpha brain not available. Set ANTHROPIC_API_KEY.")
+
+        wolves = request.wolves or ["scout", "hunter", "oracle", "shadow"]
+        assignments = await brain.coordinate(request.situation, wolves)
+        _howl_to_bridge("alpha", "pack", f"[COORDINATION] {request.situation}", "high")
+
+        return {"status": "ok", "assignments": assignments}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== TRACK ROUTES ====================
+
+@app.get("/api/track/search")
+async def track_search(pattern: str, type: str = "files", api_key: str = Depends(verify_api_key)):
+    """Search for files or code."""
+    try:
+        from modules.track import get_tracker
+        tracker = get_tracker()
+
+        if type == "files":
+            results = tracker.find(pattern)
+        elif type == "content":
+            results = tracker.grep(pattern)
+        elif type == "functions":
+            results = tracker.find_functions(pattern)
+        elif type == "classes":
+            results = tracker.find_classes(pattern)
+        else:
+            results = tracker.find(pattern)
+
+        return {
+            "status": "ok",
+            "type": type,
+            "pattern": pattern,
+            "results": [r.to_dict() for r in results[:20]]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# ==================== SANDBOX ROUTES ====================
+
+class SandboxExecuteRequest(BaseModel):
+    code: str
+    language: str = "python"
+
+@app.get("/api/sandbox/status")
+async def sandbox_status(api_key: str = Depends(verify_api_key)):
+    """Check if sandbox (Docker) is available."""
+    try:
+        from modules.sandbox import DOCKER_AVAILABLE, get_sandbox
+        sandbox = get_sandbox()
+        return {
+            "status": "ok",
+            "docker_available": DOCKER_AVAILABLE,
+            "memory_limit": sandbox.memory_limit,
+            "timeout": sandbox.timeout
+        }
+    except Exception as e:
+        return {"status": "error", "docker_available": False, "error": str(e)}
+
+@app.post("/api/sandbox/execute")
+async def sandbox_execute(request: SandboxExecuteRequest, api_key: str = Depends(verify_api_key)):
+    """Execute code in sandbox."""
+    try:
+        from modules.sandbox import execute_code
+
+        result = await execute_code(
+            request.code,
+            request.language,
+            use_docker=True
+        )
+
+        _howl_to_bridge(
+            "hunter",
+            "pack",
+            f"[EXECUTION] {request.language}: {'SUCCESS' if result.success else 'FAILED'}",
+            "medium"
+        )
+
+        return {
+            "status": "ok" if result.success else "error",
+            "result": result.to_dict()
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

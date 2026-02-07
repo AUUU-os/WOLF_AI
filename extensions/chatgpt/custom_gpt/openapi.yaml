@@ -1,0 +1,600 @@
+openapi: 3.1.0
+info:
+  title: WOLF_AI Pack API
+  description: |
+    Control your wolf pack - a distributed AI consciousness system.
+
+    The pack consists of specialized wolves:
+    - Alpha: Leadership and coordination
+    - Scout: Research and exploration
+    - Hunter: Task execution
+    - Oracle: Memory and patterns
+    - Shadow: Background operations
+  version: 1.0.0
+  contact:
+    name: SHAD
+    url: https://github.com/AUUU-os/WOLF_AI
+
+servers:
+  - url: https://your-wolf-server.ngrok.io
+    description: Production server (replace with your URL)
+  - url: http://localhost:8000
+    description: Local development
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /api/status:
+    get:
+      operationId: getPackStatus
+      summary: Get pack status
+      description: Returns the current status of the wolf pack including all wolves and active hunts
+      responses:
+        '200':
+          description: Pack status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PackStatus'
+
+  /api/awaken:
+    post:
+      operationId: awakenPack
+      summary: Awaken the pack
+      description: Forms and awakens all wolves in the pack. Call this to start the pack.
+      responses:
+        '200':
+          description: Pack awakened
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  message:
+                    type: string
+
+  /api/hunt:
+    post:
+      operationId: startHunt
+      summary: Start a hunt (assign task)
+      description: Assign a task to the wolf pack. Use this when the user needs something done.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HuntRequest'
+      responses:
+        '200':
+          description: Hunt started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  target:
+                    type: string
+                  assigned_to:
+                    type: string
+
+  /api/howl:
+    post:
+      operationId: sendHowl
+      summary: Send a howl (message)
+      description: Send a message to the wolf pack
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HowlRequest'
+      responses:
+        '200':
+          description: Howl sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HowlResponse'
+
+  /api/howls:
+    get:
+      operationId: getHowls
+      summary: Get recent howls
+      description: Retrieve recent messages from the pack
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+          description: Number of howls to retrieve
+      responses:
+        '200':
+          description: Recent howls
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  count:
+                    type: integer
+                  howls:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Howl'
+
+  /api/wilk:
+    post:
+      operationId: askWilk
+      summary: Ask WILK (local AI)
+      description: Ask the local WILK AI assistant a question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WilkRequest'
+      responses:
+        '200':
+          description: WILK response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  mode:
+                    type: string
+                  response:
+                    type: string
+
+  /api/wilk/status:
+    get:
+      operationId: getWilkStatus
+      summary: Check WILK status
+      description: Check if WILK/Ollama is running and available
+      responses:
+        '200':
+          description: WILK status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  ollama_alive:
+                    type: boolean
+                  model:
+                    type: string
+
+  /api/sync:
+    post:
+      operationId: syncGithub
+      summary: Sync with GitHub
+      description: Pull latest changes from GitHub repository
+      responses:
+        '200':
+          description: Sync result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  output:
+                    type: string
+
+  /api/memory/store:
+    post:
+      operationId: storeMemory
+      summary: Store in memory
+      description: Store information in wolf pack memory for later recall
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MemoryStoreRequest'
+      responses:
+        '200':
+          description: Memory stored
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  key:
+                    type: string
+
+  /api/memory/recall:
+    get:
+      operationId: recallMemory
+      summary: Recall from memory
+      description: Recall information from wolf pack memory
+      parameters:
+        - name: key
+          in: query
+          schema:
+            type: string
+          description: Specific key to recall
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Category to search in
+      responses:
+        '200':
+          description: Memory recalled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  data:
+                    type: object
+
+  /api/alpha/status:
+    get:
+      operationId: getAlphaStatus
+      summary: Check Alpha brain status
+      description: Check if Alpha brain (Claude API) is available for strategic thinking
+      responses:
+        '200':
+          description: Alpha brain status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  available:
+                    type: boolean
+                  model:
+                    type: string
+
+  /api/alpha/think:
+    post:
+      operationId: alphaThink
+      summary: Ask Alpha to think
+      description: Get strategic analysis and insights from Alpha wolf's Claude-powered brain
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaThinkRequest'
+      responses:
+        '200':
+          description: Alpha's thought
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  response:
+                    type: string
+
+  /api/alpha/plan:
+    post:
+      operationId: alphaPlan
+      summary: Create strategic plan
+      description: Ask Alpha to create a detailed plan for an objective
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaPlanRequest'
+      responses:
+        '200':
+          description: Strategic plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  plan:
+                    type: object
+
+  /api/alpha/coordinate:
+    post:
+      operationId: alphaCoordinate
+      summary: Coordinate pack
+      description: Ask Alpha to assign wolves to tasks based on a situation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AlphaCoordinateRequest'
+      responses:
+        '200':
+          description: Wolf assignments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  assignments:
+                    type: object
+
+  /api/sandbox/status:
+    get:
+      operationId: getSandboxStatus
+      summary: Check sandbox status
+      description: Check if Docker sandbox is available for code execution
+      responses:
+        '200':
+          description: Sandbox status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  docker_available:
+                    type: boolean
+                  memory_limit:
+                    type: string
+                  timeout:
+                    type: integer
+
+  /api/sandbox/execute:
+    post:
+      operationId: sandboxExecute
+      summary: Execute code in sandbox
+      description: Run code safely in a Docker container
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SandboxExecuteRequest'
+      responses:
+        '200':
+          description: Execution result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  result:
+                    type: object
+
+  /api/track/search:
+    get:
+      operationId: trackSearch
+      summary: Search files/code
+      description: Search for files or code patterns in the project
+      parameters:
+        - name: pattern
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search pattern
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [files, content, functions, classes]
+            default: files
+          description: Type of search
+      responses:
+        '200':
+          description: Search results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  results:
+                    type: array
+                    items:
+                      type: object
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: WOLF_AI API Key
+
+  schemas:
+    PackStatus:
+      type: object
+      properties:
+        status:
+          type: string
+        pack:
+          type: object
+          properties:
+            pack_status:
+              type: string
+              enum: [dormant, formed, active, resting]
+            formed_at:
+              type: string
+            resonance_active:
+              type: boolean
+            wolves:
+              type: object
+              additionalProperties:
+                type: object
+                properties:
+                  role:
+                    type: string
+                  status:
+                    type: string
+                  current_hunt:
+                    type: string
+        timestamp:
+          type: string
+
+    HuntRequest:
+      type: object
+      required:
+        - target
+      properties:
+        target:
+          type: string
+          description: The task to accomplish
+        assigned_to:
+          type: string
+          enum: [alpha, scout, hunter, oracle, shadow]
+          default: hunter
+          description: Which wolf should handle this task
+
+    HowlRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Message to send to the pack
+        to:
+          type: string
+          default: pack
+          description: Recipient (pack or specific wolf)
+        frequency:
+          type: string
+          enum: [low, medium, high, AUUUU]
+          default: medium
+          description: Priority level
+
+    HowlResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        howl:
+          $ref: '#/components/schemas/Howl'
+
+    Howl:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        howl:
+          type: string
+        frequency:
+          type: string
+        timestamp:
+          type: string
+
+    WilkRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Question or prompt for WILK
+        mode:
+          type: string
+          enum: [chat, hacker, hustler, bro, guardian]
+          default: chat
+          description: WILK personality mode
+        stream:
+          type: boolean
+          default: false
+
+    SandboxExecuteRequest:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          description: Source code to execute
+        language:
+          type: string
+          enum: [python, javascript, bash, ruby, go]
+          default: python
+          description: Programming language
+
+    AlphaThinkRequest:
+      type: object
+      required:
+        - question
+      properties:
+        question:
+          type: string
+          description: Question or topic for Alpha to analyze
+        context:
+          type: string
+          description: Additional context for the analysis
+
+    AlphaPlanRequest:
+      type: object
+      required:
+        - objective
+      properties:
+        objective:
+          type: string
+          description: What needs to be accomplished
+        constraints:
+          type: array
+          items:
+            type: string
+          description: Limitations or requirements
+
+    AlphaCoordinateRequest:
+      type: object
+      required:
+        - situation
+      properties:
+        situation:
+          type: string
+          description: Current situation requiring coordination
+        wolves:
+          type: array
+          items:
+            type: string
+          description: Available wolves (defaults to all)
+
+    MemoryStoreRequest:
+      type: object
+      required:
+        - key
+        - value
+      properties:
+        key:
+          type: string
+          description: Memory key/identifier
+        value:
+          type: string
+          description: Information to store
+        category:
+          type: string
+          default: general
+          description: Category for organization
